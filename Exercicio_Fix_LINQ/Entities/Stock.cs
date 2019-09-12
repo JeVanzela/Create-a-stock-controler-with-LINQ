@@ -2,9 +2,12 @@
 using System.IO;
 using System.Globalization;
 using System.Collections.Generic;
+using System.Linq;
 
-namespace Entities {
-    class Stock {
+namespace Entities
+{
+    class Stock
+    {
 
         public string Patch { get; set; }
         public List<Products> ProductList { get; set; }
@@ -30,7 +33,7 @@ namespace Entities {
                     string[] divisor = Sr.ReadLine().Split(", ");
 
                     //Cria um Produto no estoque
-                    ProductList.Add(new Products(int.Parse(divisor[0]), divisor[1], double.Parse(divisor[2]), int.Parse(divisor[3])));
+                    ProductList.Add(new Products(int.Parse(divisor[0]), divisor[1], double.Parse(divisor[2]), int.Parse(divisor[3]), int.Parse(divisor[4])));
                     IncrementarIdCount();
                 }
             }
@@ -46,6 +49,7 @@ namespace Entities {
                     Sw.WriteLine(p.Id + ", " +
                                  p.Name.ToUpper() + ", " +
                                  p.Price.ToString("F2", CultureInfo.CurrentCulture) + ", " +
+                                 p.Quantity + ", " +
                                  p.Category.Id);
                 }
             }
@@ -53,7 +57,7 @@ namespace Entities {
 
         public void AddProduct()
         {
-            Console.WriteLine("Please! Enter the following information: ");
+            Console.WriteLine("\nPlease! Enter the following information: ");
             Console.Write("Name: ");
             string name = Console.ReadLine();
 
@@ -66,7 +70,10 @@ namespace Entities {
                               "     3 - Eletronics");
             int idCategory = VerificandoIdCategory(Console.ReadLine());
 
-            ProductList.Add(new Products(VerificandoIdProduct(), name, price, idCategory));
+            Console.Write("Quantaty:");
+            int qt = int.Parse(Console.ReadLine());
+
+            ProductList.Add(new Products(VerificandoIdProduct(), name, price, qt, idCategory));
 
             Console.WriteLine();
             PrintDocument();
@@ -75,37 +82,50 @@ namespace Entities {
 
         public void RemoveProduct()
         {
-            Console.Write("Please! Enter ID for to remove: ");
+            Console.Write("\nPlease! Enter ID for to remove: ");
             int idTemp = int.Parse(Console.ReadLine());
 
-            if (idTemp > 0 && idTemp <= count)
+
+
+            if (idTemp > 0 && idTemp < VerificandoIdProduct())
             {
-                foreach (Products p in ProductList)
+                var removeId = ProductList.Where(p => p.Id == idTemp).SingleOrDefault();
+
+                Console.WriteLine();
+                Console.WriteLine("\n" + removeId);
+                Console.WriteLine("\nDo you want to delete? y/n");
+                string vaiDeletar = Console.ReadLine().ToLower();
+
+                if (vaiDeletar == "y" || vaiDeletar == "yes")
                 {
-                    if (p.Id == idTemp)
+                    Console.Write("Write the quantity: ");
+                    int removeQuantity = int.Parse(Console.ReadLine());
+
+                    if (removeId.Quantity > removeQuantity)
                     {
-                        Console.WriteLine();
-                        Console.WriteLine("\n" + p);
-                        Console.WriteLine("\nDo you want to delete? y/n");
-                        string vaiDeletar = Console.ReadLine().ToLower();
+                        Console.WriteLine("Removed {0} unity(s)", removeQuantity);
+                        removeId.Quantity -= removeQuantity;
+                        removeId.RemovePriceForQuantity(removeQuantity);
+                        Console.WriteLine("\n" + removeId);
+                    }
 
-                        if (vaiDeletar == "y" || vaiDeletar == "yes")
+                    else
+                    {
+                        ProductList.Remove(removeId);
+                        DecrementarIdCount();
+
+                        foreach (Products pTemp in ProductList)
                         {
-                            ProductList.Remove(p);
-                            DecrementarIdCount();
-
-                            foreach (Products pTemp in ProductList)
+                            if (pTemp.Id > idTemp)
                             {
-                                if (pTemp.Id > idTemp)
-                                {
-                                    pTemp.Id--;
-                                }
+                                pTemp.Id--;
+                                Console.WriteLine("Removed");
                             }
-                            break;
-                        } 
+                        }
                     }
                 }
             }
+
             else
             {
                 Console.WriteLine("The product does not exist.");
@@ -137,26 +157,27 @@ namespace Entities {
             }
             else
             {
-                for (int i = 1; i < 4; i++)
+                if (int.Parse(id) <= 4)
                 {
-                    if (int.Parse(id) == i)
+                    for (int i = 1; i <= 4; i++)
                     {
-                        numberId = int.Parse(id);
+                        if (int.Parse(id) == i)
+                        {
+                            numberId = int.Parse(id);
+                        }
                     }
+                }
+                else
+                {
+                    numberId = 4;
                 }
             }
             return numberId;
         }
         public int VerificandoIdProduct()
         {
-            foreach (Products p in ProductList)
-            {
-                if (p.Id == count)
-                {
-                    IncrementarIdCount();
-                }
-            }
-            return count;
+            var idProduct = ProductList.Max(p => p.Id);
+            return ++idProduct;
         }
         public void IncrementarIdCount()
         {
@@ -166,6 +187,29 @@ namespace Entities {
         public void DecrementarIdCount()
         {
             count--;
+        }
+
+        public double SomaTotalDoEstoque()
+        {
+            return ProductList.Sum(p => p.TotalProductPrice);
+        }
+
+        public void SearchIdCategory()
+        {
+            double sPrice = 0;
+            Console.Write("\nId category: ");
+            string idCategory = Console.ReadLine();
+
+            foreach (Products p in ProductList)
+            {
+                if(p.Category.Name.ToLower() == idCategory.ToLower())
+                {
+                    Console.WriteLine(p.ToString());
+                    sPrice += p.TotalProductPrice;
+                }
+            }
+
+            Console.WriteLine("\nTotal value of {0} category: {1}" , idCategory, sPrice);
         }
 
         public void PrintDocument()

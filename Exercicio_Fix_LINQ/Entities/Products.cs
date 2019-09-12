@@ -7,6 +7,8 @@ namespace Entities {
         public int Id { get; set; }
         public string Name { get; set; }
         public double Price { get; set; }
+        public int Quantity { get; set; }
+        public double TotalProductPrice { get; set; }
         public int IDCategory { get; set; }
         public Category Category { get; set; }
 
@@ -18,11 +20,13 @@ namespace Entities {
             new Category(4, "Without category", 0)
         };
 
-        public Products(int id, string name, double price, int newCategory)
+        public Products(int id, string name, double price, int quantity, int newCategory)
         {
             Id = id;
             Name = name;
             Price = price;
+            Quantity = quantity;
+            TotalProductPrice = SunQuantaty();
 
             foreach (Category c in CategoriesList)
             {
@@ -33,11 +37,24 @@ namespace Entities {
             }
         }
 
+
+        public double SunQuantaty()
+        {
+            return Price * Quantity;
+        }
+        public double RemovePriceForQuantity(int quantityToRemove)
+        {
+            TotalProductPrice = TotalProductPrice - (quantityToRemove * Price);
+            return TotalProductPrice;
+        }
+
         public override string ToString()
         {
             return (Id + " - " +
                     Name + " - " +
                     Price.ToString("F2", CultureInfo.InvariantCulture) + " - " +
+                    Quantity + " - " +
+                    TotalProductPrice + " - " +
                     Category.Name + " - " +
                     Category.Tier);
         }

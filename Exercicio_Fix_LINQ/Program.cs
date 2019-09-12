@@ -1,13 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
+using System.Globalization;
 using Entities;
 
 namespace Exercicio_Fix_LINQ {
     class Program {
         static void Main(string[] args)
         {
-            string patch = @"C:\Users\JEAN\Desktop\POOC#\apps\Exercicio_Fix_LINQ\estoque.txt";
+            string patch = @"C:\Users\Prado\Desktop\POOC#\apps\Exercicio_Fix_LINQ\estoque.txt";
+
             int flap = 0;
             string answer;
 
@@ -18,15 +18,24 @@ namespace Exercicio_Fix_LINQ {
                 do
                 {
                     /**/
+                    Console.Clear();
                     Console.WriteLine("Would you like:");
-                    Console.WriteLine("     Print the report! ( y/n or exit )");
-                    Console.WriteLine("     Add or remove product! ( add or remove )");
+                    Console.WriteLine("- Print the report! ( print )");
+                    Console.WriteLine("- Add or remove product! ( add or remove )");
+                    Console.WriteLine("- Search ID category to print! ( search )");
                     answer = Console.ReadLine();
 
-                    if (answer.ToLower() == "yes" || answer.ToLower() == "y")
+                    if (answer.ToLower() == "print" || answer.ToLower() == "p")
                     {
                         Console.WriteLine("\nReports: \n");
+                        Console.WriteLine("ID - NAME - PRICE - QUANTITY - TOTAL PRICE - CATEGORY - TIER");
                         NewStock.PrintDocument();
+                        Console.WriteLine("\nTotal stock value: " + NewStock.SomaTotalDoEstoque().ToString("F2", CultureInfo.InvariantCulture));
+                    }
+                    else if (answer.ToLower() == "search" || answer.ToLower() == "s")
+                    {
+                        Console.Write("Id category: ");
+                        NewStock.SearchIdCategory();
                     }
 
                     else if (answer.ToLower() == "add" || answer.ToLower() == "a")
